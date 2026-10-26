@@ -1,6 +1,7 @@
 import pickledb
 import os
 import bcrypt
+from datetime import datetime
 
 db_path = 'global.db'
 EDITABLE_FIELDS = {"gender", "age", "rating"}
@@ -253,12 +254,11 @@ def create_request(user, date, time):
     # TODO: db.set(f"request:{request_id}", {...}) using the record shape at the top
     #       of this section, with status="open" and accepted_by=None
     # TODO: db.save() once, then return request_id
-    db = get_db()
-    player = db.get(user)
-    if player is None:
+    if get_user(user) is None:
         return False
     request = next_request_id()
-    db.set(f"request: {request}", {"player" : user, "date" : date, "time" : time, "status" : "open", "accepted_by" : None})
+    db = get_db()
+    db.set(f"request:{request}", {"user" : user, "date" : date, "time" : time, "status" : "open", "accepted_by" : None})
     db.save()
     return request
 
@@ -267,12 +267,12 @@ def get_request(request_id):
     # TODO: build the key with f"request:{request_id}" and return db.get(key)
     #       (db.get already returns None when the key is missing)
     db = get_db()
-    record = db.get(f"request{request_id}")
+    record = db.get(f"request:{request_id}")
     if record is None:
         return None
     return record
 
-def get_open_requests(exclude_user):
+def get_open_requests(user):
     # TODO: loop over every key that starts with "request:" (skip "request:next_id"),
     #       keep records whose status is "open" and whose poster is not exclude_user,
     #       and return a list of (request_id, record) sorted by date then time
@@ -284,7 +284,26 @@ def get_open_requests(exclude_user):
     #       (only filter them out here; leave them stored so they still show in history)
     # TODO: sort with key=lambda row: (row[1]["date"], row[1]["time"]) so the soonest
     #       request is first (dates "YYYY-MM-DD" and times "HH:MM" sort correctly as text)
-    pass
+    db = get_db()
+    now = datetime.now()
+    today = now.strftime("%Y-%m-%d")
+    current_time = now.strftime("%H:%M")
+    records = []
+    for x in db.all():
+        if not x.startswith("request:") or x == "request:next_id":
+            continue
+        record = db.get(x)
+        if (record["date"], record["time"]) < (today, current_time):
+            continue
+        if record["status"] == "open" and record["user"] != user:
+            records.append((int(x[len("request:"):]), record))
+    records.sort(key=request_sort_key)
+    return records
+
+def request_sort_key(row):
+    # sort by date first, then by time for requests on the same day
+    record = row[1]
+    return (record["date"], record["time"])
 
 def accept_request(request_id, accepter):
     # TODO: return False if the request is missing, not "open", or the accepter is
@@ -297,7 +316,15 @@ def accept_request(request_id, accepter):
     #         db.get(accepter) is None
     #         accepter == record["poster"] (can't accept your own request)
     # TODO: change the record, db.set it back under the same key, db.save(), return True
-    pass
+    db = get_db()
+    record = db.get(f"request:{request_id}")
+    if record is None or record["status"] != "open" or accepter == record["user"] or db.get(accepter) is None:
+        return False
+    record["status"] = "accepted"
+    record["accepted_by"] = accepter
+    db.set(f"request:{request_id}", record)
+    db.save()
+    return True
 
 def cancel_request(request_id, user):
     # TODO: return False if the request is missing or `user` is not the poster;
