@@ -333,7 +333,14 @@ def cancel_request(request_id, user):
     # TODO: return False if record is None or record["poster"] != user
     # TODO: set record["status"] = "cancelled", db.set it back, db.save(), return True
     #       (keep the record instead of db.remove so it still shows up in history)
-    pass
+    db = get_db()
+    request = db.get(f"request:{request_id}")
+    if request is None or user != request["user"] or request["status" != "open"]:
+        return False
+    request["status"] = "cancelled"
+    db.set(f"request:{request_id}", request)
+    db.save()
+    return True
 
 def get_requests_for_user(user):
     # TODO: return a list of (request_id, record) where the user is the poster or
@@ -342,5 +349,16 @@ def get_requests_for_user(user):
     #       skip "request:next_id", get the id with int(key[len("request:"):])
     # TODO: keep the record if record["poster"] == user or record["accepted_by"] == user,
     #       and record["status"] != "cancelled"
-    # TODO: sort with key=lambda row: (row[1]["date"], row[1]["time"])
-    pass
+    # TODO: sort with key=lambda row: (row[1]["date"], row[1]["time"]) DONE
+    db = get_db()
+    records = []
+    for x in db.all():
+        if not x.startswith("request:") or x == "request:next_id":
+            continue
+        record = db.get(x)
+        if record["status"] == "cancelled":
+            continue
+        if record["user"] == user or record["accepted_by"] == user:
+            records.append((int(x[len("request:"):]), record))
+    records.sort(key=request_sort_key)
+    return records
