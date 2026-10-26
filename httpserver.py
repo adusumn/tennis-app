@@ -49,6 +49,8 @@ def signup():
     confirm_password = request.form["confirm_password"]
     age = int(request.form["age"])
     rating = float(request.form["rating"])
+    # TODO: the form's min/max is only checked by the browser, so someone can send any rating
+    #       straight to /signup; redirect back to /signup.html if rating < 1.0 or rating > 7.0
     if password != confirm_password:
         return flask.redirect("/signup.html")
     if dataservice.get_user(username) is not None:
@@ -82,28 +84,60 @@ def signout():
 def get_me():
     # TODO: return jsonify of dataservice.get_user(session["user"]) with the password hash
     #       removed, plus the username
-    pass
+    response = dataservice.get_user(session["user"])
+    if response is None:
+        session.pop("user", None)
+        return jsonify({"ERROR": "Not Signed In"}), 401    
+    profile = {
+        "username" : session["user"],
+        "rating" : response["rating"],
+        "age" : response["age"],
+        "gender" : response["gender"]
+    }
+    return jsonify(profile)
 
 @app.route("/api/me", methods=["PUT"])
 @login_required
 def update_me():
     # TODO: pass request.get_json() to dataservice.update_user(session["user"], fields);
     #       return {"ok": True} or a 400 error
-    pass
+    data = request.get_json()
+    age = data.get("age")
+    if not isinstance(age, int) or isinstance(age, bool) or age < 5 or age > 120:
+        return jsonify({"error": "invalid age"}), 400
+    gender = data.get("gender")
+    if gender not in {"male", "female", "other", "prefer_not"}:
+        return jsonify({"error": "invalid gender"}), 400
+    if dataservice.update_user(session["user"], data):
+        return jsonify({"ok" : True})
+    return jsonify({"error": ""}), 400
 
 @app.route("/api/me/password", methods=["PUT"])
 @login_required
 def change_password():
     # TODO: read old_password and new_password from request.get_json(); check the old one
-    #       with dataservice.verify_user first, then call dataservice.update_password
-    pass
+    #       with dataservice.verify_user first, then call dataservice.update_password DONE
+    data = request.get_json()
+    old_password = data.get("old_password", "")
+    new_password = data.get("new_password", "")
+    if not new_password:
+        return jsonify({"error": "new password is required"}), 400
+    if not dataservice.verify_user(session["user"], old_password):
+        return jsonify({"error": "current password is wrong"}), 403
+    dataservice.update_password(session["user"], new_password)
+    return jsonify({"ok": True})
 
 @app.route("/api/me", methods=["DELETE"])
 @login_required
 def delete_me():
     # TODO: call dataservice.delete_user(session["user"]), clear the session, return {"ok": True}
-    pass
-
+    #then we have to go through the request_ids in records DONE
+    for request_id, record in dataservice.get_requests_for_user(session["user"]):
+        if(record["status"] == "open" and record["user"] == session["user"]):
+            dataservice.cancel_request(request_id, session["user"])
+    dataservice.delete_user(session["user"])
+    session.clear()
+    return {"ok": True}
 
 # ---------- Finding players ----------
 
@@ -123,12 +157,28 @@ def record_match():
     # TODO: read winner, loser, date, score from request.get_json(); return 403 unless
     #       session["user"] is the winner or the loser; call dataservice.add_match and return
     #       the new match id, or a 400 error if it returned False
+    # TODO: pass session["user"] to add_match as reported_by; the match is saved as "pending"
+    #       and ratings don't change until the other player confirms it
     pass
 
 @app.route("/api/matches", methods=["GET"])
 @login_required
 def my_matches():
     # TODO: return jsonify of dataservice.get_matches(session["user"])
+    pass
+
+@app.route("/api/matches/<int:match_id>/confirm", methods=["POST"])
+@login_required
+def confirm(match_id):
+    # TODO: call dataservice.confirm_match(match_id, session["user"]);
+    #       return {"ok": True}, or a 400 error if it returned False
+    pass
+
+@app.route("/api/matches/<int:match_id>/decline", methods=["POST"])
+@login_required
+def decline(match_id):
+    # TODO: call dataservice.decline_match(match_id, session["user"]);
+    #       return {"ok": True}, or a 400 error if it returned False
     pass
 
 

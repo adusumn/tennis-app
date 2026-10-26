@@ -75,7 +75,7 @@
           <div class="form-group">
             <label for="rating">Skill rating</label>
             <input type="number" id="rating" name="rating" placeholder="3.5" min="1.0" max="7.0" step="0.5" required>
-            <span class="hint">NTRP scale, 1.0 (beginner) to 7.0 (pro).</span>
+            <span class="hint">NTRP scale, 1.0 (beginner) to 7.0 (pro). You can't change this later, so choose carefully.</span>
           </div>
 
           <button type="submit" class="btn btn-accent">Create account</button>
@@ -87,5 +87,22 @@
       </div>
     </section>
   </main>
+
+  <!-- Shown before the account is created so the user double-checks their rating -->
+  <dialog class="dialog" id="confirm-rating" aria-labelledby="confirm-rating-title">
+    <h2 id="confirm-rating-title">Confirm your skill rating</h2>
+    <p>You entered a rating of</p>
+    <p class="dialog-rating" id="confirm-rating-value"></p>
+    <p>
+      <strong>Please make sure this is correct. Once you confirm, you can't change it back.</strong>
+      After that, your rating only goes up or down based on your match results.
+    </p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-outline" id="confirm-rating-back">Go back and edit</button>
+      <button type="button" class="btn btn-accent" id="confirm-rating-yes">Yes, this is correct</button>
+    </div>
+  </dialog>
+
+  <script src="scripts/signup.js"></script>
 </body>
 </html>

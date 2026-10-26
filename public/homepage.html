@@ -21,116 +21,57 @@
     </div>
   </header>
 
+  <nav class="app-nav" aria-label="Main">
+    <a href="homepage.html" aria-current="page">Home</a>
+    <a href="requests.html">Match requests</a>
+    <a href="newrequest.html">Request a match</a>
+    <a href="profile.html">My profile</a>
+  </nav>
+
   <main class="app-main">
     <div class="app-intro">
       <h1 id="greeting">Welcome back.</h1>
-      <p>Find a hitting partner, keep track of your matches, and manage your profile.</p>
+      <p>Here's what's coming up on your court.</p>
     </div>
-
-    <nav class="tabs" role="tablist">
-      <button class="tab" role="tab" id="tab-schedule" data-tab="schedule" aria-controls="panel-schedule">Scheduled matches</button>
-      <button class="tab" role="tab" id="tab-requests" data-tab="requests" aria-controls="panel-requests">Match requests</button>
-      <button class="tab" role="tab" id="tab-new" data-tab="new" aria-controls="panel-new">Request a match</button>
-      <button class="tab" role="tab" id="tab-profile" data-tab="profile" aria-controls="panel-profile">My profile</button>
-    </nav>
 
     <p class="notice" id="notice" hidden></p>
 
-    <!-- Scheduled matches: accepted requests the user posted or accepted -->
-    <section class="panel" role="tabpanel" id="panel-schedule" aria-labelledby="tab-schedule" hidden>
+    <div class="stats stats-wide">
+      <div class="stat">
+        <span class="stat-label">Your rating</span>
+        <span class="stat-value" id="stat-rating">–</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Upcoming matches</span>
+        <span class="stat-value" id="stat-upcoming">–</span>
+      </div>
+      <div class="stat">
+        <span class="stat-label">Open requests from others</span>
+        <span class="stat-value" id="stat-open">–</span>
+      </div>
+    </div>
+
+    <div class="panel">
       <div class="card">
         <h2>Upcoming matches</h2>
         <p class="subtitle">Requests that you and another player have agreed on.</p>
         <ul class="list" id="schedule-list"></ul>
       </div>
-    </section>
 
-    <!-- Match requests: other players' open requests, plus the user's own open ones -->
-    <section class="panel" role="tabpanel" id="panel-requests" aria-labelledby="tab-requests" hidden>
-      <div class="card">
-        <h2>Open requests</h2>
-        <p class="subtitle">Other players looking for a match. Accept one to put it on your schedule.</p>
-        <ul class="list" id="open-list"></ul>
+      <div class="quick-links">
+        <a class="quick-link" href="newrequest.html">
+          <span class="item-title">Request a match</span>
+          <span class="item-meta">Post a day and time you want to play.</span>
+        </a>
+        <a class="quick-link" href="requests.html">
+          <span class="item-title">Browse match requests</span>
+          <span class="item-meta">Accept another player's open request.</span>
+        </a>
       </div>
-
-      <div class="card">
-        <h2>Your requests</h2>
-        <p class="subtitle">Requests you posted that nobody has accepted yet.</p>
-        <ul class="list" id="mine-list"></ul>
-      </div>
-    </section>
-
-    <!-- Request a match -->
-    <section class="panel" role="tabpanel" id="panel-new" aria-labelledby="tab-new" hidden>
-      <div class="card card-narrow">
-        <h2>Request a match</h2>
-        <p class="subtitle">Pick a day and time. Other players will see it under Match requests.</p>
-
-        <form id="request-form">
-          <div class="form-row">
-            <div class="form-group">
-              <label for="request-date">Date</label>
-              <input type="date" id="request-date" name="date" required>
-            </div>
-
-            <div class="form-group">
-              <label for="request-time">Time</label>
-              <input type="time" id="request-time" name="time" required>
-            </div>
-          </div>
-
-          <button type="submit" class="btn btn-accent">Post request</button>
-        </form>
-      </div>
-    </section>
-
-    <!-- Profile -->
-    <section class="panel" role="tabpanel" id="panel-profile" aria-labelledby="tab-profile" hidden>
-      <div class="card card-narrow">
-        <h2>My profile</h2>
-        <p class="subtitle" id="profile-username"></p>
-
-        <div class="stats">
-          <div class="stat">
-            <span class="stat-label">Rating</span>
-            <span class="stat-value" id="profile-rating">–</span>
-          </div>
-          <div class="stat">
-            <span class="stat-label">Gender</span>
-            <span class="stat-value" id="profile-gender">–</span>
-          </div>
-          <div class="stat">
-            <span class="stat-label">Age</span>
-            <span class="stat-value" id="profile-age">–</span>
-          </div>
-        </div>
-
-        <form id="profile-form">
-          <h3>Edit details</h3>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="edit-gender">Gender</label>
-              <select id="edit-gender" name="gender" required>
-                <option value="male">Male</option>
-                <option value="female">Female</option>
-                <option value="other">Other</option>
-                <option value="prefer_not">Prefer not to say</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label for="edit-age">Age</label>
-              <input type="number" id="edit-age" name="age" min="5" max="120" required>
-            </div>
-          </div>
-          <span class="hint">Your rating changes automatically as you record matches.</span>
-
-          <button type="submit" class="btn">Save changes</button>
-        </form>
-      </div>
-    </section>
+    </div>
   </main>
 
+  <script src="scripts/common.js"></script>
   <script src="scripts/homepage.js"></script>
 </body>
 </html>

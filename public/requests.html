@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Match Requests - Rally</title>
+  <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="homepage.html">
+      <span class="brand-ball" aria-hidden="true"></span>
+      Rally
+    </a>
+
+    <div class="app-header-right">
+      <span class="app-user" id="header-user"></span>
+      <form action="/signout" method="post">
+        <button type="submit" class="btn btn-small btn-outline-light">Sign out</button>
+      </form>
+    </div>
+  </header>
+
+  <nav class="app-nav" aria-label="Main">
+    <a href="homepage.html">Home</a>
+    <a href="requests.html" aria-current="page">Match requests</a>
+    <a href="newrequest.html">Request a match</a>
+    <a href="profile.html">My profile</a>
+  </nav>
+
+  <main class="app-main">
+    <div class="app-intro">
+      <h1>Match requests</h1>
+      <p>Accept another player's request, or keep an eye on the ones you've posted.</p>
+    </div>
+
+    <p class="notice" id="notice" hidden></p>
+
+    <div class="panel">
+      <div class="card">
+        <h2>Open requests</h2>
+        <p class="subtitle">Other players looking for a match. Accept one to put it on your schedule.</p>
+        <ul class="list" id="open-list"></ul>
+      </div>
+
+      <div class="card">
+        <div class="card-heading">
+          <h2>Your requests</h2>
+          <a class="btn btn-small btn-accent" href="newrequest.html">New request</a>
+        </div>
+        <p class="subtitle">Requests you posted that nobody has accepted yet.</p>
+        <ul class="list" id="mine-list"></ul>
+      </div>
+    </div>
+  </main>
+
+  <script src="scripts/common.js"></script>
+  <script src="scripts/requests.js"></script>
+</body>
+</html>

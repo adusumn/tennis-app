@@ -4,7 +4,7 @@ import bcrypt
 from datetime import datetime
 
 db_path = 'global.db'
-EDITABLE_FIELDS = {"gender", "age", "rating"}
+EDITABLE_FIELDS = {"gender", "age"}
 SCALE = 0.5
 def get_db():
     db = pickledb.PickleDB(db_path)
@@ -133,6 +133,11 @@ def add_match(winner, loser, date, score):
     # TODO: store a match record under a separate key space (e.g. "match:<id>") so it
     #       does not collide with user records, then call adjust_ratings(winner, loser, score)
     #       so both players' ratings move; return the new match id
+    # TODO: stop fake results: a match should only change ratings after the OTHER player confirms it
+    #       - add a `reported_by` parameter (the signed-in user who is recording the match)
+    #       - return False unless reported_by is the winner or the loser
+    #       - also store "status": "pending" and "reported_by": reported_by in the match record
+    #       - remove the adjust_ratings call from here; confirm_match calls it instead
     db = get_db()
     if db.get(winner) is None or db.get(loser) is None or winner == loser:
         return False
@@ -144,6 +149,24 @@ def add_match(winner, loser, date, score):
     db.save()
     adjust_ratings(winner, loser, score)
     return match_id
+
+def confirm_match(match_id, user):
+    # TODO: load the record with db.get(f"match:{match_id}")
+    # TODO: return False if any of these are true:
+    #         the record is None
+    #         record["status"] != "pending"      (already confirmed or declined)
+    #         user is not the winner or the loser (not their match)
+    #         user == record["reported_by"]      (you can't confirm your own report)
+    # TODO: set record["status"] = "confirmed", db.set it back, db.save()
+    # TODO: only now call adjust_ratings(record["winner"], record["loser"], record["score"]),
+    #       then return True
+    pass
+
+def decline_match(match_id, user):
+    # TODO: same checks as confirm_match (missing, not "pending", not their match, or they reported it)
+    # TODO: set record["status"] = "declined", db.set it back, db.save(), return True
+    #       (don't call adjust_ratings; a declined match never changes anyone's rating)
+    pass
 
 def expected_score(rating_a, rating_b):
     # TODO: return the probability (0.0 to 1.0) that a player rated rating_a beats a
@@ -335,7 +358,7 @@ def cancel_request(request_id, user):
     #       (keep the record instead of db.remove so it still shows up in history)
     db = get_db()
     request = db.get(f"request:{request_id}")
-    if request is None or user != request["user"] or request["status" != "open"]:
+    if request is None or user != request["user"] or request["status"] != "open":
         return False
     request["status"] = "cancelled"
     db.set(f"request:{request_id}", request)

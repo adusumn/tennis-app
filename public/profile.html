@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Profile - Rally</title>
+  <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="homepage.html">
+      <span class="brand-ball" aria-hidden="true"></span>
+      Rally
+    </a>
+
+    <div class="app-header-right">
+      <span class="app-user" id="header-user"></span>
+      <form action="/signout" method="post">
+        <button type="submit" class="btn btn-small btn-outline-light">Sign out</button>
+      </form>
+    </div>
+  </header>
+
+  <nav class="app-nav" aria-label="Main">
+    <a href="homepage.html">Home</a>
+    <a href="requests.html">Match requests</a>
+    <a href="newrequest.html">Request a match</a>
+    <a href="profile.html" aria-current="page">My profile</a>
+  </nav>
+
+  <main class="app-main">
+    <div class="app-intro">
+      <h1>My profile</h1>
+      <p id="profile-username"></p>
+    </div>
+
+    <p class="notice" id="notice" hidden></p>
+
+    <div class="panel">
+      <div class="card card-narrow">
+        <h2>Skill rating</h2>
+        <div class="locked-rating">
+          <span class="stat-value" id="profile-rating">–</span>
+          <span class="locked-badge">Locked</span>
+        </div>
+        <p class="hint">
+          You chose your starting rating when you signed up, and it can't be edited.
+          It now goes up or down automatically based on your match results.
+        </p>
+      </div>
+
+      <div class="card card-narrow">
+        <h2>Personal details</h2>
+        <p class="subtitle">Update your gender and age.</p>
+
+        <form id="details-form">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="edit-gender">Gender</label>
+              <select id="edit-gender" name="gender" required>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+                <option value="prefer_not">Prefer not to say</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="edit-age">Age</label>
+              <input type="number" id="edit-age" name="age" min="5" max="120" required>
+            </div>
+          </div>
+
+          <button type="submit" class="btn">Save details</button>
+        </form>
+      </div>
+
+      <div class="card card-narrow">
+        <h2>Change password</h2>
+        <p class="subtitle">Enter your current password, then choose a new one.</p>
+
+        <form id="password-form">
+          <div class="form-group">
+            <label for="old-password">Current password</label>
+            <input type="password" id="old-password" name="old_password" autocomplete="current-password" maxlength="12" required>
+          </div>
+
+          <div class="form-group">
+            <label for="new-password">New password</label>
+            <input type="password" id="new-password" name="new_password" autocomplete="new-password" maxlength="12" pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9\s]).{1,12}" title="Use uppercase, lowercase, a number, and a special character. 12 characters max." required>
+            <span class="hint">12 characters max. Must include uppercase, lowercase, a number, and a special character.</span>
+          </div>
+
+          <div class="form-group">
+            <label for="confirm-new-password">Confirm new password</label>
+            <input type="password" id="confirm-new-password" name="confirm_password" autocomplete="new-password" maxlength="12" required>
+          </div>
+
+          <button type="submit" class="btn">Change password</button>
+        </form>
+      </div>
+    </div>
+  </main>
+
+  <script src="scripts/common.js"></script>
+  <script src="scripts/profile.js"></script>
+</body>
+</html>
