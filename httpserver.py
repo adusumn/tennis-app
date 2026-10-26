@@ -13,22 +13,27 @@ from werkzeug.utils import secure_filename
 # serve everything in public/ (html, styles, scripts) at the site root,
 # e.g. public/signin.html -> /signin.html
 app = flask.Flask(__name__, static_folder="public", static_url_path="")
-app.secret_key = "change-me"   # TODO: needed for session; replace with a long random string
-
+app.secret_key = "s#em%p9ejwrvE6Tns6Ra"   # used a random string generator https://www.textfixer.com/tools/random-string-generator.php
+    
 
 def login_required(view):
     # TODO: wrap `view` with @functools.wraps(view); if "user" is not in session,
-    #       return jsonify({"error": "not signed in"}), 401; otherwise call view(*args, **kwargs)
-    pass
-
+    #       return jsonify({"error": "not signed in"}), 401; otherwise call view(*args, **kwargs) DONE
+    @functools.wraps(view)
+    def wrap(*args, **kwargs):
+        if "user" not in session:
+            return jsonify({"error": "not signed in"}), 401
+        return view(*args, **kwargs)
+    return wrap
 
 # ---------- Pages ----------
 
 @app.route("/")
 def index():
     # TODO: redirect to /homepage.html if signed in, otherwise to /signin.html
-    pass
-
+    if "user" in session:
+        flask.redirect("/homepage.html")
+    flask.redirect("/signin.html")
 
 # ---------- Accounts ----------
 
@@ -38,18 +43,36 @@ def signup():
     #       (age -> int, rating -> float); return to /signup.html if the passwords don't match
     #       or dataservice.add_user returns False (username taken); otherwise put the username
     #       in session["user"] and redirect to /homepage.html
-    pass
+    username = request.form["username"]
+    password = request.form["password"]
+    gender = request.form["gender"]
+    confirm_password = request.form["confirm_password"]
+    age = int(request.form["age"])
+    rating = float(request.form["rating"])
+    if password != confirm_password:
+        return flask.redirect("/signup.html")
+    if dataservice.get_user(username) is not None:
+        return flask.redirect("/signin.html")
+    dataservice.add_user(username, password, gender, rating, age)
+    session["user"] = username
+    return flask.redirect("/homepage.html")
 
 @app.route("/signin", methods=["POST"])
 def signin():
     # TODO: read username and password from request.form; if dataservice.verify_user is True,
     #       set session["user"] and redirect to /homepage.html, otherwise back to /signin.html
-    pass
+    username = request.form["username"]
+    password = request.form["password"]
+    if dataservice.verify_user(username, password):
+        session["user"] = username
+        return flask.redirect("/homepage.html")
+    return flask.redirect("/signin.html")
 
 @app.route("/signout", methods=["POST"])
 def signout():
     # TODO: remove "user" from session and redirect to /signin.html
-    pass
+    session.pop("user", None)
+    return flask.redirect("/signin.html")
 
 
 # ---------- Profile ----------
