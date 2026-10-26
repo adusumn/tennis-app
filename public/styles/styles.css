@@ -1,0 +1,460 @@
+/* ============================================
+   Tennis App - Shared Styles
+   ============================================ */
+
+:root {
+  --court-green: #2e7d4f;
+  --court-green-dark: #1f5c39;
+  --court-green-light: #e6f3ec;
+  --ball-yellow: #d9ed3a;
+  --ball-yellow-dark: #b8cc1a;
+  --ink: #1b1f1d;
+  --muted: #5f6b65;
+  --line: #d6ddd9;
+  --surface: #ffffff;
+  --background: #f3f6f4;
+  --error: #c62828;
+  --radius: 12px;
+  --shadow: 0 10px 30px rgba(31, 92, 57, 0.12);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--ink);
+  background: var(--background);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Auth layout ---------- */
+
+.auth-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.auth-hero {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  align-self: start;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 20px 48px 40px;
+  color: #ffffff;
+  background:
+    linear-gradient(160deg, var(--court-green-dark), var(--court-green)),
+    var(--court-green);
+}
+
+.auth-hero > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---------- Tennis court illustration ---------- */
+
+/*
+  Real court proportions (doubles): 78 ft long x 36 ft wide.
+  Singles sidelines sit 4.5 ft in from each side (12.5%).
+  Service lines sit 21 ft from the net (26.9% of length each way).
+*/
+.court {
+  --line-w: 3px;
+  --line: rgba(255, 255, 255, 0.9);
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: min(68%, calc(84vh * 36 / 78));
+  aspect-ratio: 36 / 78;
+  transform: translate(-50%, -50%);
+  background: #2f6db0;
+  border: var(--line-w) solid var(--line);
+  box-shadow:
+    0 0 0 var(--line-w) rgba(0, 0, 0, 0.08),
+    0 24px 60px rgba(0, 0, 0, 0.25);
+  opacity: 0.95;
+  pointer-events: none;
+}
+
+.court > * {
+  position: absolute;
+}
+
+/* Singles sidelines */
+.court-singles {
+  top: 0;
+  bottom: 0;
+  left: 12.5%;
+  right: 12.5%;
+  border-left: var(--line-w) solid var(--line);
+  border-right: var(--line-w) solid var(--line);
+}
+
+/* Service lines (top and bottom edges of the service boxes) */
+.court-service {
+  left: 12.5%;
+  right: 12.5%;
+  top: 23.1%;
+  bottom: 23.1%;
+  border-top: var(--line-w) solid var(--line);
+  border-bottom: var(--line-w) solid var(--line);
+}
+
+/* Center service line, splitting the service boxes */
+.court-center {
+  left: 50%;
+  top: 23.1%;
+  bottom: 23.1%;
+  width: var(--line-w);
+  margin-left: calc(var(--line-w) / -2);
+  background: var(--line);
+}
+
+/* Center marks on each baseline */
+.court-mark {
+  left: 50%;
+  width: var(--line-w);
+  height: 2.2%;
+  margin-left: calc(var(--line-w) / -2);
+  background: var(--line);
+}
+
+.court-mark-top {
+  top: 0;
+}
+
+.court-mark-bottom {
+  bottom: 0;
+}
+
+/* Net, with mesh and a white tape along the top */
+.court-net {
+  top: 50%;
+  left: -5%;
+  right: -5%;
+  height: 3.2%;
+  margin-top: calc(var(--line-w) / -2);
+  background:
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.55) 0 1px, transparent 1px 5px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.55) 0 1px, transparent 1px 5px),
+    rgba(10, 30, 50, 0.35);
+  border-top: var(--line-w) solid #ffffff;
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+}
+
+/* Net posts */
+.court-net::before,
+.court-net::after {
+  content: "";
+  position: absolute;
+  top: calc(var(--line-w) * -2.5);
+  width: calc(var(--line-w) * 3);
+  height: calc(100% + var(--line-w) * 4);
+  background: #1b1f1d;
+  border-radius: 2px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.court-net::before {
+  left: calc(var(--line-w) * -1.5);
+}
+
+.court-net::after {
+  right: calc(var(--line-w) * -1.5);
+}
+
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: 0.02em;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand-ball {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f3ff8a, var(--ball-yellow) 60%, var(--ball-yellow-dark));
+  box-shadow: inset -3px -3px 0 rgba(0, 0, 0, 0.08);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.brand-ball::before,
+.brand-ball::after {
+  content: "";
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  border: 2px solid rgba(255, 255, 255, 0.85);
+  border-radius: 50%;
+}
+
+.brand-ball::before {
+  left: -16px;
+  top: 0;
+  clip-path: inset(0 0 0 60%);
+}
+
+.brand-ball::after {
+  right: -16px;
+  top: 0;
+  clip-path: inset(0 60% 0 0);
+}
+
+/* Headline above the form */
+.hero-copy {
+  width: 100%;
+  max-width: 420px;
+  margin-bottom: 24px;
+}
+
+.hero-copy h1 {
+  font-size: 2rem;
+  line-height: 1.15;
+  margin-bottom: 8px;
+  color: var(--court-green-dark);
+}
+
+.hero-copy p {
+  font-size: 1rem;
+  color: var(--muted);
+}
+
+.hero-footer {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.auth-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 48px 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 40px 36px;
+}
+
+.auth-card h2 {
+  font-size: 1.75rem;
+  margin-bottom: 6px;
+}
+
+.auth-card .subtitle {
+  color: var(--muted);
+  margin-bottom: 28px;
+}
+
+/* ---------- Form controls ---------- */
+
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+}
+
+label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+select {
+  width: 100%;
+  padding: 12px 14px;
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+  border: 1.5px solid var(--line);
+  border-radius: 8px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+input::placeholder {
+  color: #9aa49f;
+}
+
+input:focus,
+select:focus {
+  outline: none;
+  border-color: var(--court-green);
+  box-shadow: 0 0 0 3px rgba(46, 125, 79, 0.18);
+}
+
+select {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 18px) 50%,
+    calc(100% - 13px) 50%;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 36px;
+}
+
+.hint {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+}
+
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 400;
+  margin: 0;
+  cursor: pointer;
+}
+
+.checkbox input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--court-green);
+}
+
+.link {
+  color: var(--court-green);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.btn {
+  display: inline-block;
+  width: 100%;
+  padding: 13px 18px;
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+  color: #ffffff;
+  background: var(--court-green);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s, transform 0.05s;
+}
+
+.btn:hover {
+  background: var(--court-green-dark);
+}
+
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn-accent {
+  color: var(--ink);
+  background: var(--ball-yellow);
+}
+
+.btn-accent:hover {
+  background: var(--ball-yellow-dark);
+}
+
+.switch-auth {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 860px) {
+  .auth-page {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-hero {
+    position: relative;
+    height: auto;
+    padding: 32px 24px;
+    min-height: 220px;
+  }
+
+  .court {
+    --line-w: 2px;
+    width: auto;
+    height: min(88vw, 460px);
+    transform: translate(-50%, -50%) rotate(90deg);
+    opacity: 0.7;
+  }
+
+  .hero-copy h1 {
+    font-size: 1.6rem;
+  }
+
+  .hero-copy p {
+    font-size: 0.95rem;
+  }
+
+  .hero-footer {
+    display: none;
+  }
+
+  .auth-panel {
+    padding: 24px 16px 40px;
+  }
+
+  .auth-card {
+    padding: 28px 22px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
