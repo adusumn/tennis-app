@@ -18,12 +18,16 @@ def get_all_users():
     db = get_db()
     rows = []
     for x in db.all():
+        if ":" in x:
+            continue
         rows.append((x, db.get(x)["age"], db.get(x)["gender"], db.get(x)["rating"]))
     return rows
 
 def add_user(user, password, gender, rating, age):
     # TODO: hash the password before storing it, and save the hash in the user record DONE
     db = get_db()
+    if (":" in user):
+        return False
     if db.get(user) is not None:
         return False
     #need to hash the password
@@ -109,7 +113,11 @@ def get_users_by_rating(min_rating, max_rating):
 def find_matches(user, rating_range):
     # TODO: get the user's rating, then return other users whose rating is within
     #       +/- rating_range of it; exclude the user themself; return [] if user is missing
-    
+    db = get_db()
+    if db.get(user) is None:
+        return []
+    rating = db.get(user)["rating"]
+    return get_users_by_rating(rating-rating_range, rating + rating_range)
 
 def add_match(winner, loser, date, score):
     # TODO: store a match record under a separate key space (e.g. "match:<id>") so it
