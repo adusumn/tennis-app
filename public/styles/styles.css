@@ -613,6 +613,12 @@ select {
   overflow-wrap: anywhere;
 }
 
+.item-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
 .empty {
   padding: 18px;
   text-align: center;

@@ -61,12 +61,13 @@ def verify_user(user, password):
 def update_password(user, new_password):
     # TODO: hash new_password and overwrite the stored hash; return False if user is missing DONE
     db = get_db()
-    if(db.get(user) is None):
+    record = db.get(user)
+    if(record is None):
         return False
     salt = bcrypt.gensalt()
     hashed = bcrypt.hashpw(new_password.encode("utf-8"), salt).decode("utf-8")
-    db.get(user)["password"] = hashed
-    db.set(user, db.get(user))
+    record["password"] = hashed
+    db.set(user, record)
     db.save()
     return True
 
@@ -75,6 +76,15 @@ def delete_user(user):
     if db.get(user) is None:
         return False
     db.remove(user)
+    for x in list(db.all()):
+        if not x.startswith("request:") or x == "request:next_id":
+            continue
+        record = db.get(x)
+        if record["user"] == user and record["status"] == "open":
+            db.remove(x)
+        elif record["status"] == "accepted" and (record["user"] == user or record["accepted_by"] == user):
+            record["status"] = "cancelled"
+            db.set(x, record)
     db.save()
     return True
 
@@ -129,7 +139,7 @@ def find_matches(user, rating_range):
             result.append(row)
     return result
 
-def add_match(winner, loser, date, score):
+def add_match(winner, loser, date, score, reported_by):
     # TODO: store a match record under a separate key space (e.g. "match:<id>") so it
     #       does not collide with user records, then call adjust_ratings(winner, loser, score)
     #       so both players' ratings move; return the new match id
@@ -141,13 +151,22 @@ def add_match(winner, loser, date, score):
     db = get_db()
     if db.get(winner) is None or db.get(loser) is None or winner == loser:
         return False
+    if reported_by != winner and reported_by != loser:
+        return False
+    # reject scores parse_score can't read (e.g. "6:4", "won") or "0-0", so confirm_match
+    # can't crash in adjust_ratings after it has already saved the match as confirmed
+    try:
+        winner_games, loser_games = parse_score(score)
+    except (ValueError, AttributeError):   # AttributeError: score wasn't a string (e.g. 64 or None)
+        return False
+    if winner_games + loser_games == 0:
+        return False
     match_id = db.get("match:next_id")
     if match_id is None:
         match_id = 1
     db.set("match:next_id", match_id + 1)
-    db.set(f"match:{match_id}", {"winner" : winner, "loser" : loser, "date" : date, "score" : score})
+    db.set(f"match:{match_id}", {"winner" : winner, "loser" : loser, "date" : date, "score" : score, "status" : "pending", "reported_by" : reported_by})
     db.save()
-    adjust_ratings(winner, loser, score)
     return match_id
 
 def confirm_match(match_id, user):
@@ -160,13 +179,29 @@ def confirm_match(match_id, user):
     # TODO: set record["status"] = "confirmed", db.set it back, db.save()
     # TODO: only now call adjust_ratings(record["winner"], record["loser"], record["score"]),
     #       then return True
-    pass
+    db = get_db()
+    record = db.get(f"match:{match_id}")
+    if record is None or record.get("status") != "pending" or (user != record["winner"] and user != record["loser"]) or record.get("reported_by") == user:
+        return False
+    record["status"] = "confirmed"
+    db.set(f"match:{match_id}", record)
+    db.save()
+    adjust_ratings(record["winner"], record["loser"], record["score"])
+    return True
+
 
 def decline_match(match_id, user):
     # TODO: same checks as confirm_match (missing, not "pending", not their match, or they reported it)
     # TODO: set record["status"] = "declined", db.set it back, db.save(), return True
     #       (don't call adjust_ratings; a declined match never changes anyone's rating)
-    pass
+    db = get_db()
+    record = db.get(f"match:{match_id}")
+    if record is None or record.get("status") != "pending" or (user != record["winner"] and user != record["loser"]) or record.get("reported_by") == user:
+        return False
+    record["status"] = "declined"
+    db.set(f"match:{match_id}", record)
+    db.save()
+    return True
 
 def expected_score(rating_a, rating_b):
     # TODO: return the probability (0.0 to 1.0) that a player rated rating_a beats a
@@ -226,7 +261,7 @@ def adjust_ratings(winner, loser, score, k=0.1):
         new_lose = 1.0
     update_rating(winner, new_win)
     update_rating(loser, new_lose)
-    return new_win , new_win
+    return new_win, new_lose
 
 def get_matches(user):
     db = get_db()

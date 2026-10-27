@@ -165,7 +165,13 @@ def record_match():
     loser = response["loser"]
     date = response["date"]
     score = response["score"]
-
+    if winner == session["user"] or loser == session["user"]:
+        output = dataservice.add_match(winner, loser, date, score)
+        #continue here
+        if output is False:
+            return jsonify({"error" : "The winner or the loser does not exist or the winner and the loser have the same username"}), 400
+        return jsonify({"id" : output})
+    return jsonify({"error" : "You are not the winner or the loser. Please record your own matches"}), 403
 
 @app.route("/api/matches", methods=["GET"])
 @login_required
