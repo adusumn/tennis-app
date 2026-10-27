@@ -32,8 +32,8 @@ def login_required(view):
 def index():
     # TODO: redirect to /homepage.html if signed in, otherwise to /signin.html
     if "user" in session:
-        flask.redirect("/homepage.html")
-    flask.redirect("/signin.html")
+        return flask.redirect("/homepage.html")
+    return flask.redirect("/signin.html")
 
 # ---------- Accounts ----------
 
@@ -47,15 +47,21 @@ def signup():
     password = request.form["password"]
     gender = request.form["gender"]
     confirm_password = request.form["confirm_password"]
-    age = int(request.form["age"])
-    rating = float(request.form["rating"])
-    # TODO: the form's min/max is only checked by the browser, so someone can send any rating
-    #       straight to /signup; redirect back to /signup.html if rating < 1.0 or rating > 7.0
+    # the ?error= value tells signup.html which message to show (see scripts/autherror.js)
+    try:
+        age = int(request.form["age"])
+        rating = float(request.form["rating"])
+    except ValueError:
+        return flask.redirect("/signup.html?error=invalid")
+    # the form's min/max is only checked by the browser, so someone can send any rating straight to /signup
+    if rating < 1.0 or rating > 7.0 or age < 5 or age > 120:
+        return flask.redirect("/signup.html?error=invalid")
     if password != confirm_password:
-        return flask.redirect("/signup.html")
+        return flask.redirect("/signup.html?error=mismatch")
     if dataservice.get_user(username) is not None:
-        return flask.redirect("/signin.html")
-    dataservice.add_user(username, password, gender, rating, age)
+        return flask.redirect("/signup.html?error=taken")
+    if not dataservice.add_user(username, password, gender, rating, age):
+        return flask.redirect("/signup.html?error=invalid")
     session["user"] = username
     return flask.redirect("/homepage.html")
 
@@ -68,7 +74,7 @@ def signin():
     if dataservice.verify_user(username, password):
         session["user"] = username
         return flask.redirect("/homepage.html")
-    return flask.redirect("/signin.html")
+    return flask.redirect("/signin.html?error=wrong")
 
 @app.route("/signout", methods=["POST"])
 def signout():
@@ -166,10 +172,9 @@ def record_match():
     date = response["date"]
     score = response["score"]
     if winner == session["user"] or loser == session["user"]:
-        output = dataservice.add_match(winner, loser, date, score)
-        #continue here
+        output = dataservice.add_match(winner, loser, date, score, session["user"])
         if output is False:
-            return jsonify({"error" : "The winner or the loser does not exist or the winner and the loser have the same username"}), 400
+            return jsonify({"error" : "Couldn't record that match. Check both usernames and the score (e.g. 6-4 6-3.)"}), 400
         return jsonify({"id" : output})
     return jsonify({"error" : "You are not the winner or the loser. Please record your own matches"}), 403
 
@@ -177,63 +182,87 @@ def record_match():
 @login_required
 def my_matches():
     # TODO: return jsonify of dataservice.get_matches(session["user"])
-    pass
+    return jsonify(dataservice.get_matches(session["user"]))
 
 @app.route("/api/matches/<int:match_id>/confirm", methods=["POST"])
 @login_required
 def confirm(match_id):
     # TODO: call dataservice.confirm_match(match_id, session["user"]);
     #       return {"ok": True}, or a 400 error if it returned False
-    pass
+    what = dataservice.confirm_match(match_id, session["user"])
+    if what:
+        return {"ok": True}
+    return {"error": "Couldn't confirm that match. It may not exist, may already be confirmed or declined, or you may be the one who reported it."}, 400
 
 @app.route("/api/matches/<int:match_id>/decline", methods=["POST"])
 @login_required
 def decline(match_id):
     # TODO: call dataservice.decline_match(match_id, session["user"]);
     #       return {"ok": True}, or a 400 error if it returned False
-    pass
+    what = dataservice.decline_match(match_id, session["user"])
+    if what:
+        return {"ok": True}
+    return {"error": "Couldn't decline that match. It may not exist, may already be confirmed or declined, or you may be the one who reported it."}, 400
 
 
 # ---------- Play requests ----------
 
-@app.route("/api/requests", methods=["POST"])
+@app.route("/api/requests", methods=["POST"])   
 @login_required
 def new_request():
     # TODO: read date and time from request.get_json(); call
     #       dataservice.create_request(session["user"], date, time) and return the new id
-    pass
-
+    response = request.get_json()
+    date = response["date"]
+    time = response["time"]
+    request_id = dataservice.create_request(session["user"], date, time)
+    if request_id is False:
+        return jsonify({"error": "Couldn't create that request."}), 400
+    
+    return jsonify({"id": request_id})
 @app.route("/api/requests/open", methods=["GET"])
 @login_required
 def open_requests():
     # TODO: return jsonify of dataservice.get_open_requests(session["user"])
-    pass
+    return jsonify(dataservice.get_open_requests(session["user"]))
 
 @app.route("/api/requests/mine", methods=["GET"])
 @login_required
 def my_requests():
     # TODO: return jsonify of dataservice.get_requests_for_user(session["user"])
-    pass
+    return dataservice.get_requests_for_user(session["user"])
 
 @app.route("/api/requests/<int:request_id>", methods=["GET"])
 @login_required
 def one_request(request_id):
     # TODO: return jsonify of dataservice.get_request(request_id), or 404 if it's None
-    pass
+    response = dataservice.get_request(request_id)
+    if response is None:
+        return {"error" : "That request does not exist"}, 404
+    return jsonify(response)
 
 @app.route("/api/requests/<int:request_id>/accept", methods=["POST"])
 @login_required
 def accept(request_id):
     # TODO: call dataservice.accept_request(request_id, session["user"]);
     #       return {"ok": True} or a 400 error if it returned False
-    pass
+    response = dataservice.accept_request(request_id, session["user"])
+    if response:
+        return {"ok": True}
+    else:
+        return {"error" : "Couldn't accept that request. It may already be taken or cancelled, or it may be your own request."}, 400
+
 
 @app.route("/api/requests/<int:request_id>/cancel", methods=["POST"])
 @login_required
 def cancel(request_id):
     # TODO: call dataservice.cancel_request(request_id, session["user"]);
     #       return {"ok": True} or a 403 error if it returned False
-    pass
+    response = dataservice.cancel_request(request_id, session["user"])
+    if response:
+        return {"ok":True}
+    else:
+        return {"error": "Couldn't cancel that request. Only the player who posted it can cancel it, and only while it's still open."}, 403
 
 
 if __name__ == "__main__":

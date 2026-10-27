@@ -1,4 +1,4 @@
-// Profile page: shows the locked rating, edits gender and age, and changes the password.
+// Profile page: shows the locked rating, edits gender and age, changes the password, and deletes the account.
 // The rating is display-only here; there is no way to send a new rating from this page.
 
 function fillProfile(me) {
@@ -43,6 +43,31 @@ document.getElementById("password-form").addEventListener("submit", async (event
     if (err.message !== "not signed in") {
       showNotice("Couldn't change your password. Check that your current password is right.", true);
     }
+  }
+});
+
+const deleteDialog = document.getElementById("confirm-delete");
+
+document.getElementById("delete-account").addEventListener("click", () => {
+  hideNotice();
+  deleteDialog.showModal();
+});
+
+document.getElementById("confirm-delete-back").addEventListener("click", () => {
+  deleteDialog.close();
+});
+
+document.getElementById("confirm-delete-yes").addEventListener("click", async (event) => {
+  const button = event.target;
+  button.disabled = true;
+  try {
+    // the server also signs the user out, so go straight to the sign-in page
+    await api("DELETE", "/api/me");
+    window.location.href = "/signin.html?deleted=1";
+  } catch (err) {
+    button.disabled = false;
+    deleteDialog.close();
+    showNotice("Couldn't delete your account. Please try again.", true);
   }
 });
 

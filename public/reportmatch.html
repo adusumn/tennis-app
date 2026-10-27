@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report a Result - Rally</title>
+  <link rel="stylesheet" href="styles/styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <a class="brand" href="homepage.html">
+      <span class="brand-ball" aria-hidden="true"></span>
+      Rally
+    </a>
+
+    <div class="app-header-right">
+      <span class="app-user" id="header-user"></span>
+      <form action="/signout" method="post">
+        <button type="submit" class="btn btn-small btn-outline-light">Sign out</button>
+      </form>
+    </div>
+  </header>
+
+  <nav class="app-nav" aria-label="Main">
+    <a href="homepage.html">Home</a>
+    <a href="requests.html">Match requests</a>
+    <a href="newrequest.html">Request a match</a>
+    <a href="reportmatch.html" aria-current="page">Report a result</a>
+    <a href="profile.html">My profile</a>
+  </nav>
+
+  <main class="app-main">
+    <div class="app-intro">
+      <h1>Report a result</h1>
+      <p>Tell us how a match went. Your opponent confirms it, then both ratings update.</p>
+    </div>
+
+    <p class="notice" id="notice" hidden></p>
+
+    <div class="card card-narrow" id="report-card" hidden>
+      <form id="report-form">
+        <div class="form-group">
+          <label for="report-match">Match</label>
+          <select id="report-match" required></select>
+          <span class="hint">Matches you agreed to on the Match requests page that have already been played.</span>
+        </div>
+
+        <div class="form-group">
+          <label for="report-result">Result</label>
+          <select id="report-result" required>
+            <option value="" disabled selected>Select</option>
+            <option value="won">I won</option>
+            <option value="lost">I lost</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="report-score">Score</label>
+          <input type="text" id="report-score" placeholder="6-4 3-6 7-6(5)" autocomplete="off" pattern="\s*\d+-\d+(\(\d+\))?(\s+\d+-\d+(\(\d+\))?)*\s*" title="Winner's games first, one set per space, e.g. 6-4 3-6 7-6(5)" required>
+          <span class="hint">Winner's games first, one set per space. Tiebreak points go in brackets, e.g. 7-6(5).</span>
+        </div>
+
+        <button type="submit" class="btn btn-accent">Send for confirmation</button>
+      </form>
+    </div>
+
+    <div class="card card-narrow" id="report-empty" hidden>
+      <p class="empty">No played matches to report yet. Once a match you agreed to on the <a class="link" href="requests.html">Match requests</a> page has happened, it shows up here.</p>
+    </div>
+  </main>
+
+  <script src="scripts/common.js"></script>
+  <script src="scripts/reportmatch.js"></script>
+</body>
+</html>

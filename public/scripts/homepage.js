@@ -1,4 +1,5 @@
-// Homepage: greeting, quick stats, pending match results to confirm, and the user's upcoming (accepted) matches.
+// Homepage: greeting, quick stats, pending match results to confirm, the user's upcoming (accepted) matches,
+// and their previous (confirmed) matches.
 
 let me = null;
 
@@ -8,17 +9,39 @@ function formatDay(date) {
   return new Date(y, m - 1, d).toLocaleDateString(undefined, { weekday: "short", month: "short", day: "numeric" });
 }
 
-// Pending results the user is part of. The opponent of whoever reported it gets Confirm/Decline;
-// the reporter just sees that it's waiting.
-async function loadMatchesToConfirm() {
+// Loads the user's matches once and fills both match cards.
+async function loadMatches() {
   let matches;
   try {
     matches = await api("GET", "/api/matches");
   } catch (err) {
     renderList("confirm-list", [], "Couldn't load your matches.", null);
+    renderList("previous-list", [], "Couldn't load your matches.", null);
     return;
   }
-  const pending = matches.filter(([id, m]) => m.status === "pending");
+  renderMatchesToConfirm(matches.filter(([id, m]) => m.status === "pending"));
+  renderPreviousMatches(matches.filter(([id, m]) => m.status === "confirmed"));
+}
+
+// Confirmed results, newest first (the server already sorts them), with a W/L badge and the overall record.
+function renderPreviousMatches(confirmed) {
+  const wins = confirmed.filter(([id, m]) => m.winner === me.username).length;
+  document.getElementById("previous-summary").textContent = confirmed.length === 0
+    ? "Confirmed results, newest first."
+    : confirmed.length + " played · " + wins + " won · " + (confirmed.length - wins) + " lost";
+
+  renderList("previous-list", confirmed, "No confirmed results yet. Report a match once you've played it.", (id, m) => {
+    const won = m.winner === me.username;
+    const opponent = won ? m.loser : m.winner;
+    const badge = el("span", "result-badge " + (won ? "result-win" : "result-loss"), won ? "W" : "L");
+    badge.title = won ? "Won" : "Lost";
+    return listItem((won ? "Beat " : "Lost to ") + opponent, formatDay(m.date) + " · " + m.score, badge);
+  });
+}
+
+// Pending results the user is part of. The opponent of whoever reported it gets Confirm/Decline;
+// the reporter just sees that it's waiting.
+function renderMatchesToConfirm(pending) {
 
   renderList("confirm-list", pending, "Nothing to confirm right now.", (id, m) => {
     const won = m.winner === me.username;
@@ -39,7 +62,7 @@ async function loadMatchesToConfirm() {
       } catch (err) {
         showNotice("Couldn't confirm that match.", true);
       }
-      await loadMatchesToConfirm();
+      await loadMatches();
     }));
     actions.appendChild(actionButton("Decline", "btn-outline", async () => {
       try {
@@ -48,7 +71,7 @@ async function loadMatchesToConfirm() {
       } catch (err) {
         showNotice("Couldn't decline that match.", true);
       }
-      await loadMatchesToConfirm();
+      await loadMatches();
     }));
     return listItem(title, formatDay(m.date) + " · Reported by " + opponent, actions);
   });
@@ -56,7 +79,7 @@ async function loadMatchesToConfirm() {
 
 startPage(async () => {
   me = await loadMe();
-  loadMatchesToConfirm();
+  loadMatches();
   const firstName = me.username.split("@")[0];
   document.getElementById("greeting").textContent = "Welcome back, " + firstName + ".";
   document.getElementById("stat-rating").textContent = Number(me.rating).toFixed(2);

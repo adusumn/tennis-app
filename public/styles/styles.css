@@ -405,6 +405,14 @@ select {
   background: var(--ball-yellow-dark);
 }
 
+.btn-danger {
+  background: var(--error);
+}
+
+.btn-danger:hover {
+  background: #a11f1f;
+}
+
 .switch-auth {
   margin-top: 24px;
   text-align: center;
@@ -737,6 +745,28 @@ select {
   background: var(--background);
   border: 1px solid var(--line);
   border-radius: 999px;
+}
+
+/* W / L marker on the homepage's previous matches */
+.result-badge {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  font-weight: 700;
+  border-radius: 999px;
+}
+
+.result-win {
+  color: var(--court-green-dark);
+  background: var(--court-green-light);
+}
+
+.result-loss {
+  color: var(--error);
+  background: #fdecea;
 }
 
 /* ---------- Confirm dialog (sign up) ---------- */

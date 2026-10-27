@@ -25,6 +25,7 @@
     <a href="homepage.html">Home</a>
     <a href="requests.html">Match requests</a>
     <a href="newrequest.html">Request a match</a>
+    <a href="reportmatch.html">Report a result</a>
     <a href="profile.html" aria-current="page">My profile</a>
   </nav>
 
@@ -99,8 +100,28 @@
           <button type="submit" class="btn">Change password</button>
         </form>
       </div>
+
+      <div class="card card-narrow">
+        <h2>Delete account</h2>
+        <p class="subtitle">Permanently remove your account and rating. This can't be undone.</p>
+        <button type="button" class="btn btn-danger" id="delete-account">Delete my account</button>
+      </div>
     </div>
   </main>
+
+  <!-- Shown before the account is deleted so nobody deletes it by accident -->
+  <dialog class="dialog" id="confirm-delete" aria-labelledby="confirm-delete-title">
+    <h2 id="confirm-delete-title">Delete your account?</h2>
+    <p>
+      Your profile and rating will be removed, your open match requests will be deleted,
+      and any matches you've scheduled will be cancelled.
+    </p>
+    <p><strong>This can't be undone.</strong></p>
+    <div class="dialog-actions">
+      <button type="button" class="btn btn-outline" id="confirm-delete-back">Keep my account</button>
+      <button type="button" class="btn btn-danger" id="confirm-delete-yes">Delete account</button>
+    </div>
+  </dialog>
 
   <script src="scripts/common.js"></script>
   <script src="scripts/profile.js"></script>

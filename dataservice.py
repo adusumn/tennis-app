@@ -5,7 +5,7 @@ from datetime import datetime
 
 db_path = 'global.db'
 EDITABLE_FIELDS = {"gender", "age"}
-SCALE = 0.5
+SCALE = 1.0   # rating gap that counts as "much better": one NTRP level (0.5) apart -> better player expected to win ~76%
 def get_db():
     db = pickledb.PickleDB(db_path)
     db.load()
@@ -237,7 +237,7 @@ def margin_multiplier(score):
         margin = 0
     return 0.5 + margin
 
-def adjust_ratings(winner, loser, score, k=0.1):
+def adjust_ratings(winner, loser, score, k=0.2):
     # TODO: load both ratings, compute expected = expected_score(winner_rating, loser_rating),
     #       then:
     #         change = k * margin_multiplier(score) * (1 - expected)

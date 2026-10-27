@@ -36,6 +36,8 @@
         <h2>Sign in</h2>
         <p class="subtitle">Enter your details to continue.</p>
 
+        <p class="notice notice-error" id="notice" hidden></p>
+
         <form action="/signin" method="post">
           <div class="form-group">
             <label for="username">Username</label>
@@ -64,5 +66,7 @@
       </div>
     </section>
   </main>
+
+  <script src="scripts/autherror.js"></script>
 </body>
 </html>

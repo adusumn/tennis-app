@@ -10,6 +10,7 @@
 //   POST /api/requests/<id>/accept
 //   POST /api/requests/<id>/cancel
 //   GET  /api/matches                 -> [[match_id, record], ...]
+//   POST /api/matches                 <- {"winner", "loser", "date", "score"}
 //   POST /api/matches/<id>/confirm
 //   POST /api/matches/<id>/decline
 // A request record looks like {"user", "date", "time", "status", "accepted_by"}.
