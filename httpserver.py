@@ -146,7 +146,8 @@ def delete_me():
 def find_players():
     # TODO: read ?range= from request.args (default 0.5, as a float) and return jsonify of
     #       dataservice.find_matches(session["user"], rating_range)
-    pass
+    rating_range = request.args.get("range", 0.5, type=float)
+    return jsonify(dataservice.find_matches(session["user"], rating_range))
 
 
 # ---------- Matches ----------
@@ -159,7 +160,12 @@ def record_match():
     #       the new match id, or a 400 error if it returned False
     # TODO: pass session["user"] to add_match as reported_by; the match is saved as "pending"
     #       and ratings don't change until the other player confirms it
-    pass
+    response = request.get_json()
+    winner = response["winner"]
+    loser = response["loser"]
+    date = response["date"]
+    score = response["score"]
+
 
 @app.route("/api/matches", methods=["GET"])
 @login_required
