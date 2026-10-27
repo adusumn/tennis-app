@@ -143,11 +143,7 @@ def add_match(winner, loser, date, score, reported_by):
     # TODO: store a match record under a separate key space (e.g. "match:<id>") so it
     #       does not collide with user records, then call adjust_ratings(winner, loser, score)
     #       so both players' ratings move; return the new match id
-    # TODO: stop fake results: a match should only change ratings after the OTHER player confirms it
-    #       - add a `reported_by` parameter (the signed-in user who is recording the match)
-    #       - return False unless reported_by is the winner or the loser
-    #       - also store "status": "pending" and "reported_by": reported_by in the match record
-    #       - remove the adjust_ratings call from here; confirm_match calls it instead
+
     db = get_db()
     if db.get(winner) is None or db.get(loser) is None or winner == loser:
         return False
@@ -171,14 +167,7 @@ def add_match(winner, loser, date, score, reported_by):
 
 def confirm_match(match_id, user):
     # TODO: load the record with db.get(f"match:{match_id}")
-    # TODO: return False if any of these are true:
-    #         the record is None
-    #         record["status"] != "pending"      (already confirmed or declined)
-    #         user is not the winner or the loser (not their match)
-    #         user == record["reported_by"]      (you can't confirm your own report)
-    # TODO: set record["status"] = "confirmed", db.set it back, db.save()
-    # TODO: only now call adjust_ratings(record["winner"], record["loser"], record["score"]),
-    #       then return True
+
     db = get_db()
     record = db.get(f"match:{match_id}")
     if record is None or record.get("status") != "pending" or (user != record["winner"] and user != record["loser"]) or record.get("reported_by") == user:
@@ -192,8 +181,7 @@ def confirm_match(match_id, user):
 
 def decline_match(match_id, user):
     # TODO: same checks as confirm_match (missing, not "pending", not their match, or they reported it)
-    # TODO: set record["status"] = "declined", db.set it back, db.save(), return True
-    #       (don't call adjust_ratings; a declined match never changes anyone's rating)
+
     db = get_db()
     record = db.get(f"match:{match_id}")
     if record is None or record.get("status") != "pending" or (user != record["winner"] and user != record["loser"]) or record.get("reported_by") == user:
@@ -291,10 +279,7 @@ def match_sort_key(row):
 def next_request_id():
     # TODO: read the counter stored under "request:next_id" (treat missing as 1),
     #       save counter + 1 back, and return the id that was read
-    # TODO: use the `db` passed in instead of calling get_db() here, so the counter and
-    #       the new request are saved together by the caller's db.save()
-    #       (a second copy of the db would overwrite the new counter when it saves)
-    # TODO: don't call db.save() here; create_request saves once at the end
+
     db = get_db()
     counter = db.get("request:next_id")
     if counter is None:
@@ -307,11 +292,7 @@ def create_request(user, date, time):
     # TODO: return False if the user is missing; otherwise get an id from
     #       next_request_id(), store an "open" request record with poster=user,
     #       accepted_by=None, save, and return the new id
-    # TODO: call get_db() once, check db.get(user) is not None
-    # TODO: get the id with next_request_id(db), passing the same db
-    # TODO: db.set(f"request:{request_id}", {...}) using the record shape at the top
-    #       of this section, with status="open" and accepted_by=None
-    # TODO: db.save() once, then return request_id
+
     if get_user(user) is None:
         return False
     request = next_request_id()
@@ -322,8 +303,7 @@ def create_request(user, date, time):
 
 def get_request(request_id):
     # TODO: return the request record for "request:<request_id>", or None if missing
-    # TODO: build the key with f"request:{request_id}" and return db.get(key)
-    #       (db.get already returns None when the key is missing)
+
     db = get_db()
     record = db.get(f"request:{request_id}")
     if record is None:
@@ -334,14 +314,7 @@ def get_open_requests(user):
     # TODO: loop over every key that starts with "request:" (skip "request:next_id"),
     #       keep records whose status is "open" and whose poster is not exclude_user,
     #       and return a list of (request_id, record) sorted by date then time
-    # TODO: turn the key into the id with int(key[len("request:"):])
-    # TODO: skip requests that are already in the past: get now = datetime.now()
-    #       (add "from datetime import datetime" at the top of the file), build
-    #       today = now.strftime("%Y-%m-%d") and current_time = now.strftime("%H:%M"),
-    #       and skip the record if (record["date"], record["time"]) < (today, current_time)
-    #       (only filter them out here; leave them stored so they still show in history)
-    # TODO: sort with key=lambda row: (row[1]["date"], row[1]["time"]) so the soonest
-    #       request is first (dates "YYYY-MM-DD" and times "HH:MM" sort correctly as text)
+
     db = get_db()
     now = datetime.now()
     today = now.strftime("%Y-%m-%d")
@@ -367,13 +340,7 @@ def accept_request(request_id, accepter):
     # TODO: return False if the request is missing, not "open", or the accepter is
     #       the poster or a missing user; otherwise set status="accepted",
     #       accepted_by=accepter, save, and return True
-    # TODO: call get_db() once and load the record with db.get(f"request:{request_id}")
-    # TODO: check each failure case in order:
-    #         record is None
-    #         record["status"] != "open"   (already accepted or cancelled)
-    #         db.get(accepter) is None
-    #         accepter == record["poster"] (can't accept your own request)
-    # TODO: change the record, db.set it back under the same key, db.save(), return True
+
     db = get_db()
     record = db.get(f"request:{request_id}")
     if record is None or record["status"] != "open" or accepter == record["user"] or db.get(accepter) is None:
@@ -387,10 +354,7 @@ def accept_request(request_id, accepter):
 def cancel_request(request_id, user):
     # TODO: return False if the request is missing or `user` is not the poster;
     #       otherwise set status="cancelled", save, and return True
-    # TODO: load the record with db.get(f"request:{request_id}")
-    # TODO: return False if record is None or record["poster"] != user
-    # TODO: set record["status"] = "cancelled", db.set it back, db.save(), return True
-    #       (keep the record instead of db.remove so it still shows up in history)
+
     db = get_db()
     request = db.get(f"request:{request_id}")
     if request is None or user != request["user"] or request["status"] != "open":
@@ -403,11 +367,7 @@ def cancel_request(request_id, user):
 def get_requests_for_user(user):
     # TODO: return a list of (request_id, record) where the user is the poster or
     #       accepted_by, skipping cancelled ones, sorted by date then time
-    # TODO: same loop as get_open_requests: keys starting with "request:",
-    #       skip "request:next_id", get the id with int(key[len("request:"):])
-    # TODO: keep the record if record["poster"] == user or record["accepted_by"] == user,
-    #       and record["status"] != "cancelled"
-    # TODO: sort with key=lambda row: (row[1]["date"], row[1]["time"]) DONE
+
     db = get_db()
     records = []
     for x in db.all():

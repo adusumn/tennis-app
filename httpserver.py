@@ -164,8 +164,7 @@ def record_match():
     # TODO: read winner, loser, date, score from request.get_json(); return 403 unless
     #       session["user"] is the winner or the loser; call dataservice.add_match and return
     #       the new match id, or a 400 error if it returned False
-    # TODO: pass session["user"] to add_match as reported_by; the match is saved as "pending"
-    #       and ratings don't change until the other player confirms it
+
     response = request.get_json()
     winner = response["winner"]
     loser = response["loser"]
